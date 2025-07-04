@@ -43,8 +43,23 @@
       bgFetch.addEventListener('progress', () => {
         if (!bgFetch.downloadTotal) return;
         const percent = Math.round((bgFetch.downloaded / bgFetch.downloadTotal) * 100);
-        status.textContent = Downloaded ${percent}%;
+        status.textContent = `Downloaded ${percent}%`;
       });
+    });
+
+    navigator.serviceWorker.addEventListener('message', event => {
+      if (event.data && event.data.type === 'FETCH_COMPLETE') {
+        status.textContent = 'Download completed. Loading video...';
+        navigator.serviceWorker.controller.postMessage({
+          type: 'GET_VIDEO',
+          url: event.data.url
+        });
+      }
+      if (event.data && event.data.type === 'VIDEO_BLOB') {
+        const blobURL = URL.createObjectURL(event.data.blob);
+        video.src = blobURL;
+        video.style.display = 'block';
+      }
     });
   </script>
 </body>
