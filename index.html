@@ -23,19 +23,26 @@
     const video = document.getElementById('video');
 
     fetchBtn.addEventListener('click', async () => {
-      if (!('backgroundFetch' in registration)) {
+      if (!navigator.serviceWorker || !navigator.serviceWorker.ready) {
+        status.textContent = 'Service Worker not ready.';
+        return;
+      }
+
+      const reg = await navigator.serviceWorker.ready;
+
+      if (!('backgroundFetch' in reg)) {
         status.textContent = 'Background Fetch API not supported or flag not enabled.';
         return;
       }
 
-      const bgFetch = await registration.backgroundFetch.fetch('video-download', ['elephantsdream_teaser.mp4'], {
+      const bgFetch = await reg.backgroundFetch.fetch('video-download', ['elephantsdream_teaser.mp4'], {
         title: 'Video Download',
         icons: [{
           sizes: '72x72',
           src: 'https://www.google.com/favicon.ico',
           type: 'image/png'
         }],
-        downloadTotal: 20 * 1024 * 1024 // estimate size (20MB)
+        downloadTotal: 30 * 1024 * 1024
       });
 
       status.textContent = 'Background Fetch started.';
