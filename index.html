@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Background Fetch Demo</title>
+</head>
+<body>
+  <h1>Background Fetch Example</h1>
+  <button id="fetchBtn">Download Video in Background</button>
+  <div id="status"></div>
+  <video id="video" controls style="max-width: 100%; display: none;"></video>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker registered', reg))
+        .catch(err => console.error('Service Worker registration failed', err));
+    }
+
+    const fetchBtn = document.getElementById('fetchBtn');
+    const status = document.getElementById('status');
+    const video = document.getElementById('video');
+
+    fetchBtn.addEventListener('click', async () => {
+      if (!('backgroundFetch' in registration)) {
+        status.textContent = 'Background Fetch API not supported or flag not enabled.';
+        return;
+      }
+
+      const bgFetch = await registration.backgroundFetch.fetch('video-download', ['elephantsdream_teaser.mp4'], {
+        title: 'Video Download',
+        icons: [{
+          sizes: '72x72',
+          src: 'https://www.google.com/favicon.ico',
+          type: 'image/png'
+        }],
+        downloadTotal: 20 * 1024 * 1024 // estimate size (20MB)
+      });
+
+      status.textContent = 'Background Fetch started.';
+
+      bgFetch.addEventListener('progress', () => {
+        if (!bgFetch.downloadTotal) return;
+        const percent = Math.round((bgFetch.downloaded / bgFetch.downloadTotal) * 100);
+        status.textContent = Downloaded ${percent}%;
+      });
+    });
+  </script>
+</body>
+</html>
